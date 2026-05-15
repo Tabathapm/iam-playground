@@ -28,7 +28,7 @@ un sistema de gestión de identidades y accesos.
 ## Roadmap
 
 - [x] **Fase 1** — Scaffolding inicial: endpoints `/api/salud` y `/api/usuarios` con datos en memoria.
-- [ ] **Fase 2** — Autenticación local con JWT + PostgreSQL.
+- [x] **Fase 2** — Autenticación local con JWT + PostgreSQL.
 - [ ] **Fase 3** — Autorización por roles (RBAC).
 - [ ] **Fase 4** — Integración con OpenLDAP.
 - [ ] **Fase 5** — Login con Google (OAuth 2.0 / OIDC).
