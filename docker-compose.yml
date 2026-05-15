@@ -1,0 +1,24 @@
+# Docker Compose para los servicios de infraestructura del proyecto IAM Playground.
+
+# Cómo usar:
+#   docker compose up -d        → levanta los servicios en segundo plano
+#   docker compose down         → detiene y elimina los contenedores
+#   docker compose logs -f db   → ver logs en vivo del servicio "db"
+
+services:
+
+  db:
+    image: postgres:16-alpine
+    container_name: iam-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: iam_user
+      POSTGRES_PASSWORD: iam_pass
+      POSTGRES_DB: iam_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - iam_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  iam_postgres_data:
