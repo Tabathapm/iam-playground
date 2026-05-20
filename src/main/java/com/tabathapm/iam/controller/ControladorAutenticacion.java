@@ -1,5 +1,6 @@
 package com.tabathapm.iam.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -9,20 +10,23 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tabathapm.iam.dto.RespuestaToken;
 import com.tabathapm.iam.dto.SolicitudLogin;
 import com.tabathapm.iam.service.ServicioAutenticacion;
+import com.tabathapm.iam.service.ServicioAutenticacionLDAP;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j; 
 
 /**
  * Controlador para endpoints de autenticacion: login, refresh, etc.
- * Por ahora solo tenemos login.
  */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class ControladorAutenticacion {
 
     private final ServicioAutenticacion servicioAutenticacion;
+    private final ServicioAutenticacionLDAP servicioAutenticacionLDAP;
 
     /**
      * POST /api/auth/login
@@ -38,5 +42,52 @@ public class ControladorAutenticacion {
     public ResponseEntity<RespuestaToken> login(
             @Valid @RequestBody SolicitudLogin solicitud) {
         return ResponseEntity.ok(servicioAutenticacion.autenticar(solicitud));
+    }
+
+    /**
+     * Endpoint para autenticación contra LDAP.
+     * 
+     * Los usuarios se autentican contra OpenLDAP en lugar de PostgreSQL.
+     * Si la autenticación es exitosa, se crea/actualiza el usuario en BD local
+     * y se devuelve un JWT igual al del login tradicional.
+     * 
+     * Ejemplo de uso:
+     * POST /api/auth/login-ldap
+     * {
+     *   "nombreUsuario": "tabatha-ldap",
+     *   "contrasena": "tabatha-ldap-123"
+     * }
+     * 
+     * Respuestas:
+     * - 200 OK con { "token": "...", "tipo": "Bearer", "expiraEnSegundos": 3600 }
+     * - 401 Unauthorized si las credenciales LDAP son inválidas
+     * - 400 Bad Request si faltan campos
+     * 
+     */
+    @PostMapping("/login-ldap")
+    public ResponseEntity<RespuestaToken> loginLDAP(
+            @Valid @RequestBody SolicitudLogin solicitud) {
+        
+        try {
+            log.info("Intento de login LDAP: {}", solicitud.nombreUsuario());
+            
+            String token = servicioAutenticacionLDAP.autenticarContraLDAP(
+                solicitud.nombreUsuario(),
+                solicitud.contrasena()
+            );
+            
+            log.info("Login LDAP exitoso: {}", solicitud.nombreUsuario());
+            
+            // RespuestaToken requiere: token, tipo, expiraEnSegundos
+            // La duración está en application.properties como iam.jwt.duracion-ms
+            long expiraEnSegundos = 3600; // 1 hora (igual que en application.properties: 3600000 ms)
+            
+            return ResponseEntity.ok(new RespuestaToken(token, "Bearer", expiraEnSegundos));
+            
+        } catch (RuntimeException e) {
+            log.warn("Login LDAP fallido: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new RespuestaToken(null, "Bearer", 0));
+        }
     }
 }

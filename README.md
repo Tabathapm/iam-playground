@@ -30,9 +30,10 @@ un sistema de gestión de identidades y accesos.
 - [x] **Fase 1** — Scaffolding inicial: endpoints `/api/salud` y `/api/usuarios` con datos en memoria.
 - [x] **Fase 2** — Autenticación local con JWT + PostgreSQL.
 - [x] **Fase 3** — Autorización por roles (RBAC).
-- [ ] **Fase 4** — Integración con OpenLDAP.
+- [x] **Fase 4** — Integración con OpenLDAP.
 - [ ] **Fase 5** — Login con Google (OAuth 2.0 / OIDC).
-- [ ] **Fase 6** — Auditoría, Swagger, pulido final.
+- [ ] **Fase 6** — Tests (Unitarios + Integración)
+- [ ] **Fase 7** — Auditoría, Swagger, pulido final.
 
 ## Cómo ejecutar
 

@@ -1,0 +1,54 @@
+# ============================================================================
+# Archivo de seed para el directorio LDAP del proyecto IAM Playground
+# ============================================================================
+#
+# Estructura:
+#
+#   dc=tabathapm,dc=local          (raíz - ya existe, creada por OpenLDAP)
+#   └── ou=personas                (unidad organizacional para personas)
+#       ├── uid=tabatha-ldap       (usuario 1)
+#       ├── uid=peter-ldap         (usuario 2)
+#       └── uid=harry-ldap         (usuario 3)
+#
+# Convenciones de atributos:
+#   - dn:   Distinguished Name, la ruta única del objeto
+#   - ou:   Organizational Unit (unidad organizacional)
+#   - uid:  User ID (login)
+#   - cn:   Common Name (nombre para mostrar)
+#   - sn:   Surname (apellido)
+#   - mail: dirección de correo electrónico
+#   - userPassword: contraseña (en texto plano por ser entorno de aprendizaje)
+# ============================================================================
+
+# Unidad organizacional "personas"
+# Es el contenedor donde van a vivir todos los usuarios.
+dn: ou=personas,dc=tabathapm,dc=local
+objectClass: organizationalUnit
+ou: personas
+
+# Usuario 1: Tabatha (la versión LDAP, distinta a la de PostgreSQL)
+dn: uid=tabatha-ldap,ou=personas,dc=tabathapm,dc=local
+objectClass: inetOrgPerson
+uid: tabatha-ldap
+cn: Tabatha Peralta
+sn: Peralta
+mail: tabatha-ldap@tabathapm.local
+userPassword: tabatha-ldap-123
+
+# Usuario 2: Peter Parker
+dn: uid=peter-ldap,ou=personas,dc=tabathapm,dc=local
+objectClass: inetOrgPerson
+uid: peter-ldap
+cn: Peter Parker
+sn: Parker
+mail: peter-ldap@tabathapm.local
+userPassword: peter-ldap-123
+
+# Usuario 3: Harry Potter
+dn: uid=harry-ldap,ou=personas,dc=tabathapm,dc=local
+objectClass: inetOrgPerson
+uid: harry-ldap
+cn: Harry Potter
+sn: Potter
+mail: harry-ldap@tabathapm.local
+userPassword: harry-ldap-123
