@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IAM Playground — Panel</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Fuentes Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Colores de marca (iguales en ambos temas) */
+            --color-primario: #7f77dd;
+            --color-secundario: #1D9E75;
+            --color-acento: #D85A30;
+
+            /* Tema claro (por defecto) */
+            --fondo-pagina: #f8f9fa;
+            --fondo-tarjeta: #ffffff;
+            --fondo-codigo: #f1f0fb;
+            --fondo-footer: #0f1419;
+            --texto-primario: #1a1a1a;
+            --texto-secundario: #555a66;
+            --color-borde: #e0e0e0;
+            --sombra-suave: rgba(0,0,0,0.05);
+            --sombra-fuerte: rgba(0,0,0,0.1);
+            --hover-tab: rgba(127, 119, 221, 0.05);
+        }
+
+        [data-tema="oscuro"] {
+            --fondo-pagina: #0f1320;
+            --fondo-tarjeta: #1a2030;
+            --fondo-codigo: #252c40;
+            --fondo-footer: #080b14;
+            --texto-primario: #e9eaf0;
+            --texto-secundario: #a6acbd;
+            --color-borde: #2d3650;
+            --sombra-suave: rgba(0,0,0,0.3);
+            --sombra-fuerte: rgba(0,0,0,0.55);
+            --hover-tab: rgba(127, 119, 221, 0.18);
+        }
+
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--fondo-pagina);
+            color: var(--texto-primario);
+            line-height: 1.6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-secundario) 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-interno {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .navbar-acciones {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .navbar-subtitulo {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+        }
+
+        .boton-tema {
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            color: white;
+            border-radius: 2rem;
+            padding: 0.4rem 0.9rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .boton-tema:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .info-sesion {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: white;
+        }
+
+        .saludo-usuario {
+            font-size: 0.9rem;
+        }
+
+        .roles-usuario {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+        }
+
+        .chip-rol {
+            background: rgba(255, 255, 255, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 1rem;
+            padding: 0.1rem 0.6rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .boton-cerrar-sesion {
+            background: rgba(0, 0, 0, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            color: white;
+            border-radius: 2rem;
+            padding: 0.4rem 0.9rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .boton-cerrar-sesion:hover {
+            background: rgba(0, 0, 0, 0.35);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .contenedor-busqueda {
+            margin: 2rem 0;
+        }
+
+        .entrada-busqueda {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--color-borde);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            background-color: var(--fondo-tarjeta);
+            color: var(--texto-primario);
+            transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+        }
+
+        .entrada-busqueda:focus {
+            border-color: var(--color-primario);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(127, 119, 221, 0.1);
+        }
+
+        .nav-tabs {
+            border-bottom: 2px solid var(--color-borde);
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: var(--texto-secundario);
+            font-weight: 500;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem 0.5rem 0 0;
+            transition: all 0.3s;
+            background-color: transparent;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: var(--color-primario);
+            background-color: var(--hover-tab);
+        }
+
+        .nav-tabs .nav-link.active {
+            color: white;
+            background-color: var(--color-primario);
+            border: none;
+        }
+
+        .tab-pane {
+            display: none;
+            animation: aparecer 0.3s;
+        }
+
+        .tab-pane.show {
+            display: block;
+        }
+
+        @keyframes aparecer {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .tarjeta-concepto {
+            background: var(--fondo-tarjeta);
+            border: 1px solid var(--color-borde);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s;
+            box-shadow: 0 1px 3px var(--sombra-suave);
+            transition: all 0.3s;
+        }
+
+        .tarjeta-concepto:hover {
+            box-shadow: 0 4px 12px var(--sombra-fuerte);
+            border-color: var(--color-primario);
+        }
+
+        .tarjeta-concepto h3 {
+            margin-top: 0;
+            margin-bottom: 0.75rem;
+            color: var(--texto-primario);
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+
+        .tarjeta-concepto p {
+            margin-bottom: 0.75rem;
+            color: var(--texto-secundario);
+            font-size: 0.95rem;
+        }
+
+        .tarjeta-concepto p:last-child {
+            margin-bottom: 0;
+        }
+
+        .tarjeta-concepto code {
+            background-color: var(--fondo-codigo);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--color-acento);
+        }
+
+        .insignia {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 0.35rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .insignia-fase1 {
+            background-color: #E6F1FB;
+            color: #0C447C;
+        }
+
+        .insignia-fase2 {
+            background-color: #EAF3DE;
+            color: #27500A;
+        }
+
+        .insignia-fase3 {
+            background-color: #EEEDFE;
+            color: #3C3489;
+        }
+
+        .insignia-fase4 {
+            background-color: #E1F5EE;
+            color: #085041;
+        }
+
+        .insignia-fase5 {
+            background-color: #FBE9E0;
+            color: #8A3410;
+        }
+
+        .insignia-fase6 {
+            background-color: #E6F1FB;
+            color: #0C447C;
+        }
+
+        .insignia-base {
+            background-color: #FAEEDA;
+            color: #633806;
+        }
+
+        .insignia-pendiente {
+            background-color: #F1EFE8;
+            color: #444441;
+        }
+
+        .encabezado-fase {
+            background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-secundario) 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(127, 119, 221, 0.2);
+        }
+
+        .encabezado-fase h2 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 1.75rem;
+        }
+
+        .insignia-estado {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .estado-hecho {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .estado-pendiente {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .pilares {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .tarjeta-pilar {
+            background: var(--fondo-tarjeta);
+            border: 2px solid var(--color-primario);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .etiqueta-pilar {
+            font-size: 0.75rem;
+            color: var(--texto-secundario);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .valor-pilar {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-primario);
+        }
+
+        .cuadricula-estadistica {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tarjeta-estadistica {
+            background: linear-gradient(135deg, var(--color-primario) 0%, var(--color-secundario) 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .numero-estadistica {
+            font-size: 2rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .etiqueta-estadistica {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .item-roadmap {
+            background: var(--fondo-tarjeta);
+            border-left: 4px solid var(--color-primario);
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .item-roadmap.hecho {
+            border-left-color: var(--color-secundario);
+        }
+
+        .item-roadmap.pendiente {
+            border-left-color: #ffc107;
+        }
+
+        .icono-roadmap {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+
+        .contenido-roadmap {
+            flex: 1;
+        }
+
+        .titulo-roadmap {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .desc-roadmap {
+            font-size: 0.85rem;
+            color: var(--texto-secundario);
+        }
+
+        .diagrama-flujo {
+            background: var(--fondo-claro);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .paso-flujo {
+            background: var(--fondo-tarjeta);
+            padding: 0.5rem 1rem;
+            border-radius: 0.35rem;
+            border: 1px solid var(--color-borde);
+            font-weight: 500;
+        }
+
+        .flecha-flujo {
+            color: var(--color-primario);
+            font-weight: bold;
+        }
+
+        .sin-resultados {
+            text-align: center;
+            padding: 3rem;
+            color: var(--texto-secundario);
+        }
+
+        .icono-sin-resultados {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        footer {
+            background-color: var(--fondo-footer);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        .contenedor-principal {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .conteo-resultados {
+            font-size: 0.95rem;
+            color: var(--texto-secundario);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--color-borde);
+        }
+
+        @media (max-width: 768px) {
+            .encabezado-fase {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .encabezado-fase h2 {
+                font-size: 1.4rem;
+            }
+
+            .insignia-estado {
+                margin-top: 1rem;
+            }
+
+            .cuadricula-estadistica {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .pilares {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .nav-tabs .nav-link {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.85rem;
+            }
+
+            .navbar-brand {
+                font-size: 1.25rem;
+            }
+
+            .navbar-acciones {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                justify-content: flex-end;
+            }
+
+            .saludo-usuario {
+                font-size: 0.82rem;
+            }
+
+            .tarjeta-concepto {
+                padding: 1.15rem;
+            }
+
+            .tarjeta-concepto h3 {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .cuadricula-estadistica {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.6rem;
+            }
+
+            .pilares {
+                grid-template-columns: 1fr;
+            }
+
+            .item-roadmap {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .desc-roadmap {
+                margin-left: 0 !important;
+                margin-top: 0.25rem;
+            }
+
+            .boton-tema {
+                padding: 0.35rem 0.7rem;
+                font-size: 0.8rem;
+            }
+
+            .boton-cerrar-sesion {
+                padding: 0.35rem 0.7rem;
+                font-size: 0.8rem;
+            }
+
+            .roles-usuario {
+                display: none;
+            }
+
+            .navbar-interno {
+                gap: 0.5rem;
+            }
+        }
+
+        .em-resaltado {
+            font-style: italic;
+            color: var(--color-primario);
+            font-weight: 500;
+        }
+
+        .resaltado-fuerte {
+            font-weight: 600;
+            color: var(--texto-primario);
+        }
+    </style>
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-dark">
+        <div class="contenedor-principal navbar-interno">
+            <span class="navbar-brand">🔐 IAM Playground</span>
+            <div class="navbar-acciones">
+                <div class="info-sesion">
+                    <span class="saludo-usuario">👤 <strong id="nombre-usuario">…</strong></span>
+                    <span class="roles-usuario" id="roles-usuario"></span>
+                </div>
+                <button id="boton-tema" class="boton-tema" aria-label="Cambiar entre modo claro y oscuro">
+                    <span id="icono-tema">🌙</span>
+                    <span id="texto-tema">Modo oscuro</span>
+                </button>
+                <button class="boton-cerrar-sesion" onclick="cerrarSesion()">Cerrar sesión</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="contenedor-principal" style="padding: 2rem 1rem;">
+
+        <!-- Búsqueda -->
+        <div class="contenedor-busqueda">
+            <input
+                type="search"
+                class="entrada-busqueda"
+                id="entrada-busqueda"
+                placeholder="🔍 Buscar concepto, término, anotación..."
+            >
+        </div>
+
+        <!-- Pestañas de navegación -->
+        <ul class="nav nav-tabs" id="pestanasPrincipales" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-tab="resumen">
+                    📊 Resumen
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-tab="conceptos">
+                    📚 Conceptos IAM
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-tab="fase1">
+                    ⚙️ Fase 1 — Scaffolding
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-tab="fase2">
+                    🔑 Fase 2 — JWT + BD
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-tab="fase3">
+                    👥 Fase 3 — RBAC
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-tab="fase4">
+                    📁 Fase 4 — LDAP
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-tab="fase5">
+                    📁 Fase 5 — OAuth
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-tab="pendiente">
+                    ⏳ Por aprender
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-tab="entrevista">
+                    💬 Repaso rápido
+                </button>
+            </li>
+        </ul>
+
+        <!-- Contenido de pestañas -->
+        <div class="tab-content">
+
+            <!-- RESUMEN -->
+            <div class="tab-pane show" id="resumen-tab">
+                <div class="cuadricula-estadistica">
+                    <div class="tarjeta-estadistica">
+                        <span class="numero-estadistica">5</span>
+                        <span class="etiqueta-estadistica">Fases completadas</span>
+                    </div>
+                    <div class="tarjeta-estadistica">
+                        <span class="numero-estadistica">~62</span>
+                        <span class="etiqueta-estadistica">Conceptos cubiertos</span>
+                    </div>
+                    <div class="tarjeta-estadistica">
+                        <span class="numero-estadistica">3</span>
+                        <span class="etiqueta-estadistica">Fuentes de identidad</span>
+                    </div>
+                    <div class="tarjeta-estadistica">
+                        <span class="numero-estadistica">9</span>
+                        <span class="etiqueta-estadistica">Endpoints REST</span>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-weight: 700;">📋 Roadmap del proyecto</h3>
+                <div style="margin-bottom: 2rem;">
+                    <div class="item-roadmap hecho">
+                        <div class="icono-roadmap">✅</div>
+                        <div class="contenido-roadmap">
+                            <div class="titulo-roadmap">Fase 1 — Scaffolding inicial</div>
+                            <div class="desc-roadmap">Spring Boot + endpoints base</div>
+                        </div>
+                    </div>
+                    <div class="item-roadmap hecho">
+                        <div class="icono-roadmap">✅</div>
+                        <div class="contenido-roadmap">
+                            <div class="titulo-roadmap">Fase 2 — Autenticación local con JWT</div>
+                            <div class="desc-roadmap">PostgreSQL + BCrypt + Spring Security</div>
+                        </div>
+                    </div>
+                    <div class="item-roadmap hecho">
+                        <div class="icono-roadmap">✅</div>
+                        <div class="contenido-roadmap">
+                            <div class="titulo-roadmap">Fase 3 — RBAC</div>
+                            <div class="desc-roadmap">@PreAuthorize + roles</div>
+                        </div>
+                    </div>
+                    <div class="item-roadmap hecho">
+                        <div class="icono-roadmap">✅</div>
+                        <div class="contenido-roadmap">
+                            <div class="titulo-roadmap">Fase 4 — OpenLDAP</div>
+                            <div class="desc-roadmap">Integración con servicio de directorio</div>
+                        </div>
+                    </div>
+                    <div class="item-roadmap hecho">
+                        <div class="icono-roadmap">✅</div>
+                        <div class="contenido-roadmap">
+                            <div class="titulo-roadmap">Fase 5 — OAuth 2.0 / OIDC</div>
+                            <div class="desc-roadmap">Login con Google + frontend</div>
+                        </div>
+                    </div>
+                    <div class="item-roadmap pendiente">
+                        <div class="icono-roadmap">⏳</div>
+                        <div class="contenido-roadmap">
+                            <div class="titulo-roadmap">Fase 6 — Tests</div>
+                            <div class="desc-roadmap">Unitarios + integración</div>
+                        </div>
+                    </div>
+                    <div class="item-roadmap pendiente">
+                        <div class="icono-roadmap">⏳</div>
+                        <div class="contenido-roadmap">
+                            <div class="titulo-roadmap">Fase 7 — Auditoría + Swagger</div>
+                            <div class="desc-roadmap">Pulido final y documentación</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 1rem; font-weight: 700;">🏛️ Los 4 pilares de IAM</h3>
+                <div class="pilares">
+                    <div class="tarjeta-pilar">
+                        <div class="etiqueta-pilar">Pilar 1</div>
+                        <div class="valor-pilar">Identidad</div>
+                    </div>
+                    <div class="tarjeta-pilar">
+                        <div class="etiqueta-pilar">Pilar 2</div>
+                        <div class="valor-pilar">Autenticación</div>
+                    </div>
+                    <div class="tarjeta-pilar">
+                        <div class="etiqueta-pilar">Pilar 3</div>
+                        <div class="valor-pilar">Autorización</div>
+                    </div>
+                    <div class="tarjeta-pilar">
+                        <div class="etiqueta-pilar">Pilar 4</div>
+                        <div class="valor-pilar">Auditoría</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONCEPTOS IAM -->
+            <div class="tab-pane" id="conceptos-tab">
+                <div class="tarjeta-concepto" data-searchable="iam identity access management">
+                    <span class="insignia insignia-base">Fundamental</span>
+                    <h3>IAM (Identity & Access Management)</h3>
+                    <p>Disciplina que se encarga de gestionar identidades digitales y los accesos que esas identidades tienen sobre los sistemas. Responde dos preguntas centrales: <em class="em-resaltado">¿quién sos?</em> (autenticación) y <em class="em-resaltado">¿qué podés hacer?</em> (autorización).</p>
+                    <p>Combina autenticación, autorización, gestión del ciclo de vida del usuario y auditoría. Es el "portero" digital de las empresas.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="autenticación authentication probar identidad">
+                    <span class="insignia insignia-base">Fundamental</span>
+                    <h3>Autenticación (AuthN)</h3>
+                    <p>Probar la identidad de alguien. Ejemplos: usuario + contraseña, biometría, certificado digital, JWT, MFA. Responde a <em class="em-resaltado">¿quién sos?</em></p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="autorización authorization permisos acceso">
+                    <span class="insignia insignia-base">Fundamental</span>
+                    <h3>Autorización (AuthZ)</h3>
+                    <p>Definir y verificar los permisos que tiene una identidad sobre los recursos. Ejemplos: "este usuario puede leer pero no borrar", "este rol puede acceder al panel admin". Responde a <em class="em-resaltado">¿qué podés hacer?</em></p>
+                    <p>En HTTP, autenticación fallida = <code>401 Unauthorized</code>; autorización fallida = <code>403 Forbidden</code>.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="sso single sign on login único federación">
+                    <span class="insignia insignia-base">Fundamental</span>
+                    <h3>SSO (Single Sign-On)</h3>
+                    <p>Login único: te logueás una vez y accedés a múltiples aplicaciones sin tener que volver a ingresar credenciales. Lo experimentás todos los días cuando entrás a Gmail y ya estás logueada en Drive, YouTube, etc.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="federación federated identity">
+                    <span class="insignia insignia-base">Fundamental</span>
+                    <h3>Federación</h3>
+                    <p>Permitir que un usuario de una organización A acceda a sistemas de una organización B sin crear una cuenta nueva. La identidad de A es "confiada" por B.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="rbac role based access control roles">
+                    <span class="insignia insignia-base">Fundamental</span>
+                    <h3>RBAC (Role-Based Access Control)</h3>
+                    <p>Modelo de autorización donde los permisos se asignan a <em class="em-resaltado">roles</em>, y los usuarios reciben roles. En lugar de decir "Tabatha puede X, Juan puede Y", decís "los ADMINISTRADORES pueden X" y le das ese rol a quien corresponda. Escala mucho mejor que asignar permisos individualmente.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="abac attribute based access control atributos">
+                    <span class="insignia insignia-base">Fundamental</span>
+                    <h3>ABAC (Attribute-Based Access Control)</h3>
+                    <p>Modelo más granular que RBAC: los permisos se evalúan según atributos del usuario, recurso o contexto. Ejemplos: "puede acceder solo en horario laboral", "puede aprobar gastos hasta $5000", "puede acceder solo desde la red corporativa".</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="claim claims jwt token">
+                    <span class="insignia insignia-base">Fundamental</span>
+                    <h3>Claim</h3>
+                    <p>Afirmación verificable sobre un sujeto, en formato clave-valor. Por ejemplo: <code>"sub": "tabatha"</code>, <code>"roles": ["ADMIN"]</code>, <code>"exp": 1234567890</code>.</p>
+                    <p>Los claims viajan dentro de tokens (JWT, ID Token de OIDC, SAML assertion). Son la unidad básica de información de identidad en sistemas modernos.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="provisioning deprovisioning onboarding offboarding">
+                    <span class="insignia insignia-base">Fundamental</span>
+                    <h3>Provisioning / De-provisioning</h3>
+                    <p>Crear (provisioning) o quitar (de-provisioning) cuentas y accesos. Es el onboarding y offboarding de empleados en una empresa. Cuando alguien renuncia, hay que revocar todos sus accesos rápidamente.</p>
+                </div>
+            </div>
+
+            <!-- FASE 1 -->
+            <div class="tab-pane" id="fase1-tab">
+                <div class="encabezado-fase">
+                    <h2>Fase 1 — Scaffolding inicial</h2>
+                    <span class="insignia-estado estado-hecho">✅ Completada</span>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="spring boot spring framework auto configuración starter">
+                    <span class="insignia insignia-fase1">Concepto</span>
+                    <h3>Spring Boot vs Spring Framework</h3>
+                    <p><strong class="resaltado-fuerte">Spring Framework</strong> (viejo): potente pero requiere mucha configuración XML manual. <strong class="resaltado-fuerte">Spring Boot</strong>: trae auto-configuración + "starters" (paquetes que agrupan dependencias) + un servidor web embebido. Te ahorra horas de setup.</p>
+                    <p>Ejemplo: con <code>spring-boot-starter-web</code> ya tenés Tomcat embebido, Jackson para JSON, validación, todo configurado.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="arquitectura capas controller service repository patrón">
+                    <span class="insignia insignia-fase1">Patrón</span>
+                    <h3>Arquitectura en capas (Controller → Service → Repository)</h3>
+                    <p>Separación clásica de responsabilidades:</p>
+                    <div class="diagrama-flujo">
+                        <span class="paso-flujo">Controller</span>
+                        <span class="flecha-flujo">→</span>
+                        <span class="paso-flujo">Service</span>
+                        <span class="flecha-flujo">→</span>
+                        <span class="paso-flujo">Repository</span>
+                        <span class="flecha-flujo">→</span>
+                        <span class="paso-flujo">Base de datos</span>
+                    </div>
+                    <p><strong class="resaltado-fuerte">Controller</strong>: recibe HTTP, valida input, llama al service.<br><strong class="resaltado-fuerte">Service</strong>: lógica de negocio.<br><strong class="resaltado-fuerte">Repository</strong>: acceso a datos.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="anotaciones rest spring requestmapping getmapping postmapping pathvariable requestbody">
+                    <span class="insignia insignia-fase1">Anotación</span>
+                    <h3>Anotaciones REST de Spring</h3>
+                    <p><code>@RestController</code>: marca la clase como controlador REST (devuelve JSON, no vistas).<br><code>@RequestMapping("/api")</code>: prefijo común para todos los endpoints.<br><code>@GetMapping</code>, <code>@PostMapping</code>: mapea método HTTP + ruta.<br><code>@PathVariable</code>: captura variables de la URL (<code>/api/usuarios/{id}</code>).<br><code>@RequestBody</code>: parsea el body JSON al objeto Java.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="inyección dependencias constructor autowired spring">
+                    <span class="insignia insignia-fase1">Concepto</span>
+                    <h3>Inyección de dependencias por constructor</h3>
+                    <p>Patrón donde las dependencias de una clase se reciben en su constructor, en lugar de crearlas adentro. Con Lombok <code>@RequiredArgsConstructor</code>, Spring inyecta automáticamente los servicios necesarios. Hace el código más testeable y desacoplado.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="dto data transfer object buena práctica separación">
+                    <span class="insignia insignia-fase1">Buena práctica</span>
+                    <h3>DTO (Data Transfer Object)</h3>
+                    <p>Objeto que viaja entre capas. Separa lo que la API expone hacia afuera de lo que tenés internamente en la entidad. Esencial para nunca exponer cosas sensibles como el <em class="em-resaltado">hash</em> de la contraseña.</p>
+                </div>
+            </div>
+
+            <!-- FASE 2 -->
+            <div class="tab-pane" id="fase2-tab">
+                <div class="encabezado-fase">
+                    <h2>Fase 2 — JWT + PostgreSQL + BCrypt</h2>
+                    <span class="insignia-estado estado-hecho">✅ Completada</span>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="jwt json web token header payload signature">
+                    <span class="insignia insignia-fase2">Concepto</span>
+                    <h3>JWT (JSON Web Token)</h3>
+                    <p>Formato de token <em class="em-resaltado">auto-contenido</em> y firmado. Tiene tres partes separadas por puntos: <code>header.payload.signature</code>.</p>
+                    <div class="diagrama-flujo">
+                        <span class="paso-flujo">Header (alg, typ)</span>
+                        <span class="flecha-flujo">.</span>
+                        <span class="paso-flujo">Payload (claims)</span>
+                        <span class="flecha-flujo">.</span>
+                        <span class="paso-flujo">Signature</span>
+                    </div>
+                    <p>El servidor firma con una clave secreta. Cualquiera puede <em class="em-resaltado">leer</em> el JWT (no está cifrado), pero solo el servidor puede <em class="em-resaltado">generar uno válido</em>. Si modifican el payload, la firma deja de coincidir y se rechaza.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="claims registrados privados iat exp iss aud sub">
+                    <span class="insignia insignia-fase2">Concepto</span>
+                    <h3>Claims registrados vs privados</h3>
+                    <p><strong class="resaltado-fuerte">Registrados</strong> (definidos por el RFC): <code>sub</code> (subject), <code>iat</code> (issued at), <code>exp</code> (expiration), <code>iss</code> (issuer), <code>aud</code> (audience), <code>jti</code> (id único).</p>
+                    <p><strong class="resaltado-fuerte">Privados</strong>: los que define cada aplicación según sus necesidades. En la app se ven los claims <code>roles</code> e <code>idUsuario</code> dentro del payload del JWT.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="hs256 hs512 rs256 hmac rsa asimétrico simétrico">
+                    <span class="insignia insignia-fase2">Algoritmo</span>
+                    <h3>HS256, HS512, RS256</h3>
+                    <p><strong class="resaltado-fuerte">HS256/HS384/HS512</strong>: HMAC con SHA simétrico. La misma clave secreta firma y verifica. Bueno cuando solo tu servidor firma y verifica.</p>
+                    <p><strong class="resaltado-fuerte">RS256</strong>: RSA asimétrico. Clave privada firma, clave pública verifica. Útil cuando hay varios servicios que verifican tokens emitidos por un servicio central (escenario típico de OIDC).</p>
+                    <p>En la app se usa <strong class="resaltado-fuerte">HS512</strong> porque la clave secreta tiene 78 caracteres, longitud suficiente para ese algoritmo.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="stateless sesiones autenticación sin estado">
+                    <span class="insignia insignia-fase2">Concepto</span>
+                    <h3>Autenticación stateless</h3>
+                    <p>El servidor <em class="em-resaltado">no guarda sesiones</em> en memoria. La "prueba de identidad" viaja en el JWT que el cliente manda en cada request (<code>Authorization: Bearer xxx</code>). Permite escalar horizontalmente: cualquier instancia del servidor puede validar el token sin compartir estado.</p>
+                    <p>Contraste con las sesiones tradicionales: el servidor guarda en memoria que "el usuario X está logueado" y el cliente manda una cookie con un id de sesión. La app evita esto: cada request lleva el JWT en el header <code>Authorization</code>.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="hashing cifrado unidireccional contraseña seguridad">
+                    <span class="insignia insignia-fase2">Seguridad</span>
+                    <h3>Hashing vs Cifrado</h3>
+                    <p><strong class="resaltado-fuerte">Hashing</strong>: función <em class="em-resaltado">unidireccional</em>. No se puede des-hashear. Solo comparás hash contra hash. <em class="em-resaltado">Se usa para contraseñas</em>.</p>
+                    <p><strong class="resaltado-fuerte">Cifrado</strong>: función <em class="em-resaltado">bidireccional</em>. Se puede descifrar con la clave correcta. <em class="em-resaltado">Se usa para datos que necesitás recuperar en texto plano</em> (ej. tarjetas de crédito).</p>
+                    <p>Si un servicio ofrece "enviar la contraseña olvidada por email", es una mala señal: significa que la guarda en texto plano o cifrada, no hasheada.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="bcrypt salt hashing contraseña costo factor">
+                    <span class="insignia insignia-fase2">Seguridad</span>
+                    <h3>BCrypt + Salt</h3>
+                    <p><strong class="resaltado-fuerte">BCrypt</strong>: algoritmo estándar de hashing de contraseñas. Incluye <em class="em-resaltado">salt</em> automático y <em class="em-resaltado">costo configurable</em> (factor de trabajo).</p>
+                    <p><strong class="resaltado-fuerte">Salt</strong>: valor aleatorio único por contraseña. Hace que dos usuarios con la misma contraseña tengan hashes distintos. Protege contra ataques de <em class="em-resaltado">rainbow tables</em>.</p>
+                    <p>En la app, los hashes guardados empiezan con <code>$2a$10$...</code> → versión de BCrypt + costo 10 + salt + hash. Se pueden ver en la columna <code>hash_contrasena</code> de la tabla <code>usuarios</code>.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="spring security filter chain filtros autenticación">
+                    <span class="insignia insignia-fase2">Spring Security</span>
+                    <h3>Filter Chain de Spring Security</h3>
+                    <p>Spring Security funciona como una cadena de filtros HTTP. Cada request pasa por la cadena, y cada filtro puede autenticar, autorizar o rechazar.</p>
+                    <p>En la app, <code>FiltroAutenticacionJWT</code> se inserta antes de <code>UsernamePasswordAuthenticationFilter</code>. Ese filtro extrae el JWT del header, lo valida, y setea el contexto de seguridad.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="userdetails userdetailsservice spring security usuario adaptador">
+                    <span class="insignia insignia-fase2">Spring Security</span>
+                    <h3>UserDetails + UserDetailsService</h3>
+                    <p>Spring Security tiene su propio modelo de "usuario" (<code>UserDetails</code>). Como la entidad <code>Usuario</code> de la app no implementa esa interfaz, se usa un <strong class="resaltado-fuerte">adaptador</strong> (<code>AdaptadorUsuarioSpring</code>) que la envuelve.</p>
+                    <p>El <code>UserDetailsService</code> es la pieza que Spring usa para "cargar" un usuario por username durante el proceso de autenticación.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="jpa hibernate spring data orm relacional objeto">
+                    <span class="insignia insignia-fase2">JPA</span>
+                    <h3>JPA / Hibernate / Spring Data</h3>
+                    <p><strong class="resaltado-fuerte">JPA</strong>: <em class="em-resaltado">specification</em> de Java para mapear objetos a tablas (ORM).<br><strong class="resaltado-fuerte">Hibernate</strong>: la implementación más usada de JPA.<br><strong class="resaltado-fuerte">Spring Data JPA</strong>: capa sobre Hibernate que te genera repositorios automáticamente.</p>
+                    <p>Con solo definir <code>findByNombreUsuario(String)</code> en la interfaz, Spring Data construye la query SQL automáticamente.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="entity elementcollection enumerated anotaciones jpa mapeo">
+                    <span class="insignia insignia-fase2">JPA</span>
+                    <h3>@Entity, @ElementCollection, @Enumerated</h3>
+                    <p><code>@Entity</code>: marca la clase como mapeable a tabla.<br><code>@ElementCollection</code>: para colecciones de tipos básicos o enums (se mapean a una tabla aparte; en la app es <code>usuarios_roles</code>).<br><code>@Enumerated(STRING)</code>: guarda el nombre del enum como texto, no como número (más legible y robusto a reordenamientos).</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="validación bean validation notblank valid anotaciones">
+                    <span class="insignia insignia-fase2">Validación</span>
+                    <h3>Bean Validation (@NotBlank, @Valid)</h3>
+                    <p>Estándar Java para validar inputs declarativamente. <code>@NotBlank</code> en un DTO + <code>@Valid</code> en el parámetro del controller = si llega vacío, Spring devuelve 400 antes de entrar al método. Patrón "fail fast".</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="docker docker compose volúmenes persistencia infraestructura">
+                    <span class="insignia insignia-fase2">Docker</span>
+                    <h3>Docker Compose + Volúmenes</h3>
+                    <p><strong class="resaltado-fuerte">Docker Compose</strong>: herramienta para definir y levantar múltiples contenedores con un YAML. Ideal para infraestructura local de desarrollo.</p>
+                    <p><strong class="resaltado-fuerte">Volúmenes</strong>: persisten los datos del contenedor entre reinicios. Sin volumen, cuando hacés <code>docker compose down</code> se pierde la BD.</p>
+                </div>
+            </div>
+
+            <!-- FASE 3 -->
+            <div class="tab-pane" id="fase3-tab">
+                <div class="encabezado-fase">
+                    <h2>Fase 3 — RBAC con @PreAuthorize</h2>
+                    <span class="insignia-estado estado-hecho">✅ Completada</span>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="enablemethodsecurity spring security method level">
+                    <span class="insignia insignia-fase3">Spring Security</span>
+                    <h3>@EnableMethodSecurity</h3>
+                    <p>Anotación que "enciende" la posibilidad de usar <code>@PreAuthorize</code> y <code>@PostAuthorize</code> en métodos. Sin ella, esas anotaciones se ignoran silenciosamente, y eso es uno de los bugs más comunes de Spring Security.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="preauthorize spring security spel expresión autorización">
+                    <span class="insignia insignia-fase3">Spring Security</span>
+                    <h3>@PreAuthorize</h3>
+                    <p>Evalúa una expresión SpEL (Spring Expression Language) <em class="em-resaltado">antes</em> de ejecutar el método. Si la expresión devuelve <code>false</code>, Spring devuelve 403 Forbidden y el método ni se ejecuta.</p>
+                    <p>Ejemplos:<br><code>@PreAuthorize("hasRole('ADMINISTRADOR')")</code><br><code>@PreAuthorize("hasAnyRole('USUARIO', 'ADMINISTRADOR')")</code><br><code>@PreAuthorize("hasAuthority('ROLE_ADMIN')")</code></p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="role prefix convención spring security">
+                    <span class="insignia insignia-fase3">Convención</span>
+                    <h3>El prefijo "ROLE_"</h3>
+                    <p>Convención de Spring Security: al usar <code>hasRole('ADMINISTRADOR')</code>, Spring agrega automáticamente el prefijo <code>ROLE_</code>. Por eso en <code>AdaptadorUsuarioSpring</code> las authorities se guardan como <code>"ROLE_" + rol.name()</code>.</p>
+                    <p>Si usás <code>hasAuthority(...)</code> tenés que poner el prefijo explícito. <strong class="resaltado-fuerte">Misma convención, dos formas de escribirla</strong>.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="401 403 unauthorized forbidden autenticación autorización http">
+                    <span class="insignia insignia-fase3">Concepto</span>
+                    <h3>401 vs 403 — autenticación vs autorización</h3>
+                    <p><strong class="resaltado-fuerte">401 Unauthorized</strong>: no sé quién sos (sin token, token inválido, token expirado). El nombre del status es históricamente confuso porque "unauthorized" suena a autorización, pero en realidad es de autenticación.</p>
+                    <p><strong class="resaltado-fuerte">403 Forbidden</strong>: sé quién sos, pero no podés acceder a este recurso. Tu rol no tiene permisos suficientes.</p>
+                    <p>Esta distinción es <em class="em-resaltado">fundamental</em> en cualquier sistema de IAM.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="separación funciones principio seguridad roles">
+                    <span class="insignia insignia-fase3">Principio</span>
+                    <h3>Separación de funciones</h3>
+                    <p>Principio de seguridad: ningún rol único debería tener todo el poder. Por eso en la app, ADMINISTRADOR no puede acceder a <code>/api/auditor/logs</code> aunque sea el "rol más alto". El AUDITOR puede leer logs que ni siquiera el admin debería poder alterar.</p>
+                </div>
+            </div>
+
+            <!-- FASE 4 -->
+            <div class="tab-pane" id="fase4-tab">
+                <div class="encabezado-fase">
+                    <h2>Fase 4 — OpenLDAP</h2>
+                    <span class="insignia-estado estado-hecho">✅ Completada</span>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="directorio servicio ldap active directory eDirectory">
+                    <span class="insignia insignia-fase4">Concepto</span>
+                    <h3>Servicio de directorio</h3>
+                    <p>Base de datos especializada en almacenar información de identidades organizada jerárquicamente. Optimizada para <em class="em-resaltado">lecturas masivas</em> (typical 90% lecturas, 10% escrituras). Es la "agenda corporativa" digital.</p>
+                    <p>Ejemplos: <strong class="resaltado-fuerte">Active Directory</strong> (Microsoft), <strong class="resaltado-fuerte">OpenLDAP</strong> (open source), <strong class="resaltado-fuerte">Novell eDirectory</strong> (OpenText/NetIQ), <strong class="resaltado-fuerte">Entra ID</strong> (ex Azure AD, la versión cloud de Microsoft).</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="ldap lightweight directory access protocol tcp puerto 389 636">
+                    <span class="insignia insignia-fase4">Protocolo</span>
+                    <h3>LDAP (Lightweight Directory Access Protocol)</h3>
+                    <p>Protocolo estándar para consultar y modificar servicios de directorio. Definido en RFCs. Es a los directorios lo que SQL es a las bases relacionales.</p>
+                    <p>Funciona sobre TCP/IP, puerto <strong class="resaltado-fuerte">389</strong> (sin TLS) o <strong class="resaltado-fuerte">636</strong> (con TLS, llamado LDAPS).</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="dit dn rdn distinguished name árbol directorio">
+                    <span class="insignia insignia-fase4">Terminología</span>
+                    <h3>DIT, DN, RDN</h3>
+                    <p><strong class="resaltado-fuerte">DIT</strong> (Directory Information Tree): el árbol entero del directorio.<br><strong class="resaltado-fuerte">DN</strong> (Distinguished Name): la "ruta única" de una entrada. Ej: <code>uid=harry-ldap,ou=personas,dc=tabathapm,dc=local</code>.<br><strong class="resaltado-fuerte">RDN</strong> (Relative Distinguished Name): el primer componente del DN (en el ejemplo, <code>uid=harry-ldap</code>).</p>
+                    <p>Los DN se leen de izquierda (más específico) a derecha (más general). Es como una ruta de archivo invertida.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="dc ou uid cn sn mail userpassword memberof atributos">
+                    <span class="insignia insignia-fase4">Atributos</span>
+                    <h3>Componentes de un DN</h3>
+                    <p><code>dc</code> (domain component): partes del dominio. <code>tabathapm.local</code> → <code>dc=tabathapm,dc=local</code>.<br><code>ou</code> (organizational unit): contenedor lógico (personas, grupos, computadoras).<br><code>uid</code> (user id): identificador del usuario (el "username").<br><code>cn</code> (common name): nombre para mostrar.<br><code>sn</code> (surname): apellido (obligatorio en personas).<br><code>mail</code>: email.<br><code>userPassword</code>: contraseña hasheada.<br><code>memberOf</code>: grupos a los que pertenece.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="objectclass inetorgperson clases ldap schema">
+                    <span class="insignia insignia-fase4">Concepto</span>
+                    <h3>objectClass</h3>
+                    <p>Cada entrada LDAP <em class="em-resaltado">debe</em> declarar a qué "clases" pertenece. La objectClass define qué atributos puede (o debe) tener la entrada. Ej: <code>inetOrgPerson</code> es la objectClass estándar para representar personas en una organización.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="operaciones ldap bind search add modify delete unbind">
+                    <span class="insignia insignia-fase4">Operaciones</span>
+                    <h3>Operaciones LDAP</h3>
+                    <p><strong class="resaltado-fuerte">bind</strong>: autenticarse contra el directorio.<br><strong class="resaltado-fuerte">search</strong>: buscar entradas con filtros.<br><strong class="resaltado-fuerte">add</strong>: agregar entrada nueva.<br><strong class="resaltado-fuerte">modify</strong>: modificar atributos.<br><strong class="resaltado-fuerte">delete</strong>: borrar entrada.<br><strong class="resaltado-fuerte">unbind</strong>: cerrar la conexión.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="bind authentication ldap login contraseña autenticación directorio">
+                    <span class="insignia insignia-fase4">Autenticación</span>
+                    <h3>Bind authentication (autenticación contra LDAP)</h3>
+                    <p>El patrón estándar de "login contra LDAP":</p>
+                    <div class="diagrama-flujo">
+                        <span class="paso-flujo">1. Bind como admin</span>
+                        <span class="flecha-flujo">→</span>
+                        <span class="paso-flujo">2. Buscar usuario por uid</span>
+                        <span class="flecha-flujo">→</span>
+                        <span class="paso-flujo">3. Bind con DN + password</span>
+                        <span class="flecha-flujo">→</span>
+                        <span class="paso-flujo">✅ o ❌</span>
+                    </div>
+                    <p>Hacen falta dos binds porque el usuario solo conoce su <code>uid</code> (ej. "harry-ldap"), no su DN completo. El primer bind sirve para encontrar el DN, el segundo para validar la contraseña.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="service account usuario técnico credenciales vault producción">
+                    <span class="insignia insignia-fase4">Buena práctica</span>
+                    <h3>Service account / Usuario técnico</h3>
+                    <p>En IAM real, tu aplicación se conecta al directorio como una "cuenta técnica" con permisos limitados, NO como un usuario humano. En producción, esas credenciales se guardan en un vault (HashiCorp Vault, AWS Secrets Manager, Azure Key Vault).</p>
+                    <p>En la app se dejan en <code>application.properties</code> por ser un entorno de aprendizaje, aunque <em class="em-resaltado">conocer esta práctica</em> es importante: en producción irían en un vault.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="ldif ldap data interchange format import export entrada">
+                    <span class="insignia insignia-fase4">Formato</span>
+                    <h3>LDIF (LDAP Data Interchange Format)</h3>
+                    <p>Formato de texto plano para importar/exportar datos en LDAP. Es el equivalente al <code>INSERT</code> de SQL para directorios. Cada bloque separado por línea en blanco es una entrada con su DN y atributos.</p>
+                    <p>Para cargar usuarios al directorio se usa <code>docker cp ldap-seed.ldif</code> + <code>ldapadd</code>. Hay que tener en cuenta que <code>docker compose down -v</code> borra los volúmenes y deja el directorio vacío, así que después hay que reimportar el LDIF.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="spring ldap ldaptemplate authenticate bind abstracto">
+                    <span class="insignia insignia-fase4">Implementado</span>
+                    <h3>Spring LDAP — LdapTemplate</h3>
+                    <p>Librería oficial para hablar con servidores LDAP desde Spring. <code>LdapTemplate</code> es similar a <code>JdbcTemplate</code>: abstrae las operaciones LDAP de bajo nivel.</p>
+                    <p>Método clave: <code>ldapTemplate.authenticate(base, filtro, contrasena)</code> hace los dos binds (admin + usuario) automáticamente. El filtro va con paréntesis: <code>(uid=tabatha-ldap)</code>.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="configuracionldap ldapcontextsource bean configuración spring">
+                    <span class="insignia insignia-fase4">Implementado</span>
+                    <h3>ConfiguracionLDAP (lo que armaste)</h3>
+                    <p>Spring no crea el <code>LdapTemplate</code> solo: hay que definirlo en una clase <code>@Configuration</code>. En la app se definen dos beans: un <code>LdapContextSource</code> (URL + credenciales del admin + base DN) y el <code>LdapTemplate</code> que lo usa.</p>
+                    <p>Como el <code>LdapContextSource</code> ya tiene <code>dc=tabathapm,dc=local</code> como base, en la búsqueda solo pasás <code>ou=personas</code> — si repetís el base DN, se duplica y da el error <em class="em-resaltado">"No Such Object" (code 32)</em>.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="servicioautenticacionldap sincronización just in time provisioning bd local">
+                    <span class="insignia insignia-fase4">Implementado</span>
+                    <h3>Sincronización LDAP → PostgreSQL</h3>
+                    <p>Cuando un usuario LDAP se autentica por primera vez, tu <code>ServicioAutenticacionLDAP</code> lo crea automáticamente en PostgreSQL con rol USUARIO. Esto se llama <em class="em-resaltado">just-in-time provisioning</em>: la cuenta local se crea en el momento del primer login.</p>
+                    <p>Resultado: la tabla <code>usuarios</code> queda con 6 registros — 3 locales (Fase 2) y 3 provenientes de LDAP (Fase 4). El usuario final obtiene el mismo JWT sin importar la fuente.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="dos fuentes identidad abstracción endpoint login-ldap arquitectura">
+                    <span class="insignia insignia-fase4">Logro</span>
+                    <h3>Dos fuentes de identidad, un mismo JWT</h3>
+                    <p>La app autentica contra dos lugares distintos: <code>POST /api/auth/login</code> (PostgreSQL + BCrypt) y <code>POST /api/auth/login-ldap</code> (OpenLDAP). Ambos devuelven el mismo tipo de JWT.</p>
+                    <p>Esto es exactamente lo que hace un IAM real: ser una capa de abstracción que esconde <em class="em-resaltado">dónde</em> viven las identidades. En la app se puede ver al comparar las respuestas de <code>/api/auth/login</code> y <code>/api/auth/login-ldap</code>: distintos orígenes, mismo formato de token.</p>
+                </div>
+            </div>
+
+            <!-- FASE 5 -->
+            <div class="tab-pane" id="fase5-tab">
+                <div class="encabezado-fase">
+                    <h2>Fase 5 — OAuth 2.0 / OIDC</h2>
+                    <span class="insignia-estado estado-hecho">✅ Completada</span>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="oauth oauth2 autorización framework token accesstoken refreshtoken">
+                    <span class="insignia insignia-fase5">Concepto</span>
+                    <h3>OAuth 2.0</h3>
+                    <p>Framework de <em class="em-resaltado">autorización</em>. Permite a una app acceder a recursos en nombre de un usuario, sin recibir su contraseña.</p>
+                    <p><strong class="resaltado-fuerte">4 actores</strong>: Resource Owner (el usuario), Client (la app), Authorization Server (emite tokens), Resource Server (guarda los recursos).</p>
+                    <p><strong class="resaltado-fuerte">Tokens</strong>: Access Token (vida corta, para llamar APIs), Refresh Token (vida larga, para renovar), Authorization Code (intermediario en flujos web).</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="oidc openid connect autenticación id token google login">
+                    <span class="insignia insignia-fase5">Concepto</span>
+                    <h3>OIDC (OpenID Connect)</h3>
+                    <p>Capa de <em class="em-resaltado">autenticación</em> encima de OAuth 2.0. Es lo que se usa cuando hacés "Login with Google". Agrega el concepto de <strong class="resaltado-fuerte">ID Token</strong>: un JWT con información de identidad del usuario.</p>
+                    <p>OAuth te dice "esta app tiene permiso para acceder a X". OIDC además te dice "y este es el usuario".</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="flujos grant types authorization code client credentials device code pkce">
+                    <span class="insignia insignia-fase5">Concepto</span>
+                    <h3>Flujos OAuth (grant types)</h3>
+                    <p><strong class="resaltado-fuerte">Authorization Code</strong>: el clásico para web apps con backend (el que usa la app).<br><strong class="resaltado-fuerte">Authorization Code + PKCE</strong>: para SPAs y mobile (evita exposición del client secret).<br><strong class="resaltado-fuerte">Client Credentials</strong>: máquina a máquina.<br><strong class="resaltado-fuerte">Device Code</strong>: para smart TVs y dispositivos sin teclado.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="scopes scope profile email calendar drive permisos oauth">
+                    <span class="insignia insignia-fase5">Concepto</span>
+                    <h3>Scopes</h3>
+                    <p>Permisos granulares en OAuth. Ej: <code>profile</code>, <code>email</code>, <code>calendar.read</code>, <code>drive.write</code>. La app pide los scopes <code>openid email profile</code> al iniciar sesión con Google.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="flujo authorization code intercambio callback redirect implementado google paso a paso">
+                    <span class="insignia insignia-fase5">Implementado</span>
+                    <h3>El flujo Authorization Code, paso a paso</h3>
+                    <p>Es el flujo que implementa la app: el usuario hace click en "Continuar con Google" → la app redirige al servidor de Google → el usuario autoriza → Google redirige a <code>/api/auth/google/callback</code> con un <strong class="resaltado-fuerte">código</strong> → el backend intercambia ese código por tokens → extrae el email → genera un JWT propio.</p>
+                    <p>El código es de un solo uso y de vida corta. La contraseña del usuario nunca pasa por la app: esa es la idea central de OAuth.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="servicioautenticaciongoogle resttemplate token endpoint intercambio implementado form urlencoded">
+                    <span class="insignia insignia-fase5">Implementado</span>
+                    <h3>ServicioAutenticacionGoogle</h3>
+                    <p>Hace un POST al <em class="em-resaltado">token endpoint</em> de Google (<code>oauth2.googleapis.com/token</code>) con el código, el client_id y el client_secret, usando <code>RestTemplate</code>. Google responde con un access_token y un <strong class="resaltado-fuerte">id_token</strong>.</p>
+                    <p>El intercambio usa <code>application/x-www-form-urlencoded</code>, no JSON: es un detalle del estándar OAuth fácil de pasar por alto.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="id token decodificar payload base64 jwt email claim firma seguridad">
+                    <span class="insignia insignia-fase5">Implementado</span>
+                    <h3>Decodificar el ID Token</h3>
+                    <p>El id_token es un JWT firmado por Google. La app decodifica su payload (la parte del medio, en Base64 URL-safe) para extraer el claim <code>email</code> y crear o ubicar al usuario en PostgreSQL.</p>
+                    <p>Nota de seguridad: la app decodifica sin validar la firma porque controla el flujo de punta a punta. En producción se validaría la firma del id_token con la librería oficial de Google para evitar tokens falsificados.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="frontend login dashboard html estatico spring static sesion jwt localstorage">
+                    <span class="insignia insignia-fase5">Implementado</span>
+                    <h3>Frontend estático (login + panel)</h3>
+                    <p>Servido por Spring desde <code>resources/static</code>, en el mismo puerto que la API (sin CORS ni segundo servidor). <code>login.html</code> ofrece los tres métodos de login; <code>dashboard.html</code> muestra este resumen con barra de sesión (nombre, roles, cerrar sesión).</p>
+                    <p>El JWT se guarda en <code>localStorage</code> y se decodifica en el cliente solo para mostrar el nombre y los roles. La protección real la hacen los endpoints de la API, no el HTML.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="tres fuentes identidad postgresql ldap google logro abstracción mismo jwt">
+                    <span class="insignia insignia-fase5">Logro</span>
+                    <h3>Tres fuentes de identidad, un mismo JWT</h3>
+                    <p>Con la Fase 5 la app autentica contra tres orígenes: PostgreSQL (local), OpenLDAP (directorio) y Google (OAuth/OIDC). Los tres terminan en el mismo JWT y pasan por la misma autorización por roles.</p>
+                    <p>Esto es el corazón de un IAM: una capa única de identidad sobre fuentes heterogéneas. En la app se ve en <code>login.html</code>, con los tres botones que llevan al mismo panel.</p>
+                </div>
+            </div>
+
+            <!-- PENDIENTE -->
+            <div class="tab-pane" id="pendiente-tab">
+
+                <div class="tarjeta-concepto" data-searchable="saml saml2 xml assertion sso corporativo">
+                    <span class="insignia insignia-pendiente">Estándar</span>
+                    <h3>SAML 2.0</h3>
+                    <p>Estándar más viejo que OIDC, basado en XML. Cumple un rol similar a OIDC pero con otra implementación. Aún <em class="em-resaltado">muy usado</em> en empresas grandes y SSO corporativo (Microsoft, IBM, Oracle).</p>
+                    <p>Concepto clave: <em class="em-resaltado">SAML assertion</em>, el equivalente al ID Token de OIDC.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="tests testing junit mockito unitarios integración cobertura servicio jwt">
+                    <span class="insignia insignia-fase6">Fase 6 · en curso</span>
+                    <h3>Tests (unitarios + integración)</h3>
+                    <p>Fase en curso. Con <strong class="resaltado-fuerte">JUnit 5</strong> + <strong class="resaltado-fuerte">Mockito</strong> se cubren tres niveles: tests unitarios (lógica pura como <code>ServicioJWT</code>), tests de integración (los endpoints de login con MockMvc), y opcionalmente E2E (flujo completo login → JWT → recurso protegido).</p>
+                    <p>El criterio: primero funcionalidad, después cobertura. El primer servicio cubierto es <code>ServicioJWT</code>, con 8 casos de prueba.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="junit junit5 framework testing anotaciones aserciones red de seguridad">
+                    <span class="insignia insignia-fase6">Framework</span>
+                    <h3>JUnit 5</h3>
+                    <p>Es el framework estándar para escribir tests en Java. Aporta las anotaciones (<code>@Test</code>, <code>@BeforeEach</code>) y los métodos de aserción (<code>assertEquals</code>, <code>assertThrows</code>).</p>
+                    <p>Un test es, simplemente, <em class="em-resaltado">código que prueba tu código</em>. En vez de verificar a mano en Postman, lo automatizás: se vuelve una red de seguridad que avisa al instante si un cambio rompe algo.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="arrange act assert patrón aaa estructura test preparar ejecutar verificar">
+                    <span class="insignia insignia-fase6">Patrón</span>
+                    <h3>Patrón Arrange-Act-Assert (AAA)</h3>
+                    <p>Todo buen test sigue tres pasos, siempre en este orden. <strong class="resaltado-fuerte">Arrange</strong>: preparar los datos. <strong class="resaltado-fuerte">Act</strong>: ejecutar lo único que se quiere probar. <strong class="resaltado-fuerte">Assert</strong>: verificar que el resultado sea el esperado.</p>
+                    <p>Si la afirmación es falsa, el test falla. Mantener esta estructura hace los tests legibles y fáciles de mantener.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="beforeeach before each preparación setup estado limpio anotación">
+                    <span class="insignia insignia-fase6">Anotación</span>
+                    <h3>@BeforeEach</h3>
+                    <p>Marca un método que corre <em class="em-resaltado">antes de cada test</em>. Sirve para que cada prueba arranque con un estado limpio y fresco, sin que una contamine a la otra.</p>
+                    <p>En el test de <code>ServicioJWT</code>, el método <code>setUp()</code> crea un servicio y un usuario nuevos antes de cada uno de los 8 tests.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="test displayname anotación nombre legible reporte resultados">
+                    <span class="insignia insignia-fase6">Anotación</span>
+                    <h3>@Test y @DisplayName</h3>
+                    <p><code>@Test</code> marca un método como una prueba que JUnit debe ejecutar. <code>@DisplayName</code> es opcional: le pone una descripción legible al test, que aparece en el reporte en vez del nombre del método.</p>
+                    <p>Es pura comodidad para leer qué pasó cuando se corren muchos tests juntos.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="assert aserciones assertequals asserttrue assertthrows excepción verificar">
+                    <span class="insignia insignia-fase6">Aserciones</span>
+                    <h3>Las aserciones (assert)</h3>
+                    <p>Son el corazón del test. <code>assertEquals(esperado, obtenido)</code> falla si no coinciden. <code>assertTrue</code> / <code>assertFalse</code> para condiciones booleanas.</p>
+                    <p>La más interesante en seguridad es <code>assertThrows</code>: verifica que el código <em class="em-resaltado">lance una excepción</em>. Por ejemplo, que un token firmado con otra clave sea rechazado — si no explotara, significaría que se aceptó un token falso.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="failure error diferencia fallo nullpointerexception lógica setup resultado">
+                    <span class="insignia insignia-fase6">Concepto</span>
+                    <h3>Failure vs Error</h3>
+                    <p>Dos resultados que se confunden. Un <strong class="resaltado-fuerte">Failure</strong> es cuando un assert no se cumplió: el código anda, pero no como esperabas. Un <strong class="resaltado-fuerte">Error</strong> es cuando el test reventó por algo inesperado (un <code>NullPointerException</code>, una clase que no existe).</p>
+                    <p>Los failures apuntan a la lógica; los errors, muchas veces, a un problema de setup.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="inyección constructor testeable diseño desacoplado mockito sin spring">
+                    <span class="insignia insignia-fase6">Buena práctica</span>
+                    <h3>Diseño testeable: inyección por constructor</h3>
+                    <p><code>ServicioJWT</code> recibe sus dependencias por el constructor, así que para testearlo se instancia directo, sin levantar Spring ni mockear nada.</p>
+                    <p>Esto no es casualidad: la <em class="em-resaltado">inyección por constructor</em> hace el código fácil de testear. Es un argumento de diseño sólido para defender en una entrevista.</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="auditoría logs seguridad compliance gdpr sox hipaa">
+                    <span class="insignia insignia-pendiente">Fase 7</span>
+                    <h3>Auditoría de seguridad</h3>
+                    <p>Registro de eventos de seguridad para análisis posterior: quién se logueó, cuándo, desde dónde, qué intentó hacer. Esencial para compliance (GDPR, SOX, HIPAA).</p>
+                    <p>En la Fase 7 se guardarán logs de auditoría en la base de datos (login exitoso, login fallido, cambio de roles, etc.).</p>
+                </div>
+            </div>
+
+            <!-- REPASO RAPIDO -->
+            <div class="tab-pane" id="entrevista-tab">
+
+                <div class="tarjeta-concepto" data-searchable="iam pregunta qué es identity access management">
+                    <span class="insignia insignia-base">Pregunta de repaso</span>
+                    <h3>"¿Qué entendés por IAM?"</h3>
+                    <p><em class="em-resaltado">Respuesta:</em> "IAM es la disciplina que se encarga de gestionar identidades digitales y los accesos que esas identidades tienen sobre los sistemas. Combina autenticación, autorización, gestión del ciclo de vida del usuario y auditoría."</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="pregunta diferencia autenticación autorización 401 403">
+                    <span class="insignia insignia-base">Pregunta de repaso</span>
+                    <h3>"¿Cuál es la diferencia entre autenticación y autorización?"</h3>
+                    <p><em class="em-resaltado">Respuesta:</em> "Autenticación es probar quién sos — usuario y contraseña, un JWT válido, un certificado. Autorización es definir qué podés hacer una vez autenticado. En HTTP: 401 es fallo de autenticación, 403 es fallo de autorización. En la app, el JWT autentica al usuario, y las anotaciones <code>@PreAuthorize</code> aplican autorización por rol."</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="pregunta ldap protocolo directorio active directory openldap eDirectory">
+                    <span class="insignia insignia-base">Pregunta de repaso</span>
+                    <h3>"¿Conocés LDAP?"</h3>
+                    <p><em class="em-resaltado">Respuesta:</em> "Sí. LDAP es el protocolo estándar para consultar servicios de directorio como Active Directory, OpenLDAP o eDirectory. La información se organiza jerárquicamente con DNs y un DIT. Las operaciones principales son bind (autenticación), search, modify. En la app se integró OpenLDAP con Spring Boot — los usuarios pueden autenticarse contra el directorio o contra una base de datos local, y obtienen el mismo JWT."</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="pregunta oauth oauth2 framework autorización contraseña">
+                    <span class="insignia insignia-base">Pregunta de repaso</span>
+                    <h3>"¿Qué es OAuth?"</h3>
+                    <p><em class="em-resaltado">Respuesta:</em> "OAuth 2.0 es un framework de autorización que permite a aplicaciones acceder a recursos en nombre del usuario sin tener su contraseña. OIDC es la capa de autenticación encima de OAuth — lo que usás cuando hacés Login with Google. El flujo más común es Authorization Code, donde el cliente recibe un código que intercambia por un access token."</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="pregunta jwt funcionamiento header payload signature firma">
+                    <span class="insignia insignia-base">Pregunta de repaso</span>
+                    <h3>"¿Cómo funciona JWT?"</h3>
+                    <p><em class="em-resaltado">Respuesta:</em> "Un JWT tiene tres partes: header con el algoritmo, payload con los claims (información del usuario), y signature. El servidor firma con una clave secreta. Cualquiera puede leer el contenido pero solo el servidor con la clave puede generar uno válido. En la app se usa HS512, los claims incluyen <code>sub</code>, <code>roles</code>, <code>iat</code>, <code>exp</code>. La autenticación es stateless: el server no guarda sesiones, todo viaja en el token."</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="pregunta bcrypt sha256 contraseña hashing fuerza bruta">
+                    <span class="insignia insignia-base">Pregunta de repaso</span>
+                    <h3>"¿Por qué BCrypt y no SHA256?"</h3>
+                    <p><em class="em-resaltado">Respuesta:</em> "BCrypt está diseñado específicamente para contraseñas: incluye salt automático, es lento a propósito (factor de costo configurable) lo que dificulta ataques por fuerza bruta. SHA256 es rápido — algo bueno para checksums pero malo para contraseñas, porque un atacante puede probar millones de combinaciones por segundo. La regla es: hashes generales rápidos para datos, hashes lentos para contraseñas."</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="ventaja varias fuentes identidad abstracción login ldap">
+                    <span class="insignia insignia-base">Pregunta de repaso</span>
+                    <h3>"¿Qué ventaja tiene soportar varias fuentes de identidad?"</h3>
+                    <p><em class="em-resaltado">Respuesta:</em> "Permite que usuarios de orígenes distintos —una base local, un directorio LDAP corporativo, o un proveedor como Google— accedan al mismo sistema sin duplicar lógica. La aplicación queda como una capa de abstracción sobre la identidad. En la app se ve con los endpoints <code>/api/auth/login</code> y <code>/api/auth/login-ldap</code>, que validan contra fuentes diferentes pero devuelven el mismo JWT."</p>
+                </div>
+
+                <div class="tarjeta-concepto" data-searchable="pregunta spring security filterchain autenticación autorización">
+                    <span class="insignia insignia-base">Pregunta de repaso</span>
+                    <h3>"¿Cómo funciona Spring Security?"</h3>
+                    <p><em class="em-resaltado">Respuesta:</em> "Spring Security usa una cadena de filtros HTTP. Cada request pasa por múltiples filtros que pueden autenticar, autorizar o rechazar. En la app, un filtro personalizado para JWT se ejecuta antes de los filtros por defecto, extrae el token del header Authorization, lo valida, y setea el contexto de seguridad con la información del usuario. Después, anotaciones como <code>@PreAuthorize</code> evalúan la autorización."</p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Resultados de búsqueda global (se llena dinámicamente) -->
+        <div id="resultados-busqueda" style="display: none;"></div>
+
+    </div>
+    <footer>
+        <p><strong>IAM Playground</strong> • Material de estudio sobre Identity &amp; Access Management</p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8;">Tabatha Peralta • Mayo 2026</p>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ============================================================
+        //  CONTROL DE SESIÓN (verificación de token y datos de usuario)
+        // ============================================================
+
+        // 1. Obtener el token: primero de la URL (viene de Google), luego de localStorage
+        function obtenerToken() {
+            const params = new URLSearchParams(window.location.search);
+            const tokenUrl = params.get('token');
+            const errorUrl = params.get('error');
+
+            if (errorUrl) {
+                // Falló el login con Google
+                window.location.href = '/login.html';
+                return null;
+            }
+
+            if (tokenUrl) {
+                // Llegó desde Google: guardar y limpiar la URL
+                try { localStorage.setItem('iam-token', tokenUrl); } catch (e) {}
+                window.history.replaceState({}, document.title, '/dashboard.html');
+                return tokenUrl;
+            }
+
+            // Si no vino por URL, buscarlo en localStorage (login local / LDAP)
+            try { return localStorage.getItem('iam-token'); } catch (e) { return null; }
+        }
+
+        // 2. Decodificar el payload del JWT (sin validar firma, solo para mostrar datos)
+        function decodificarToken(token) {
+            try {
+                const partes = token.split('.');
+                if (partes.length !== 3) return null;
+                const payload = partes[1].replace(/-/g, '+').replace(/_/g, '/');
+                return JSON.parse(decodeURIComponent(escape(atob(payload))));
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // 3. Cerrar sesión
+        function cerrarSesion() {
+            try { localStorage.removeItem('iam-token'); } catch (e) {}
+            window.location.href = '/login.html';
+        }
+
+        // 4. Verificar sesión al cargar la página
+        const tokenSesion = obtenerToken();
+        if (!tokenSesion) {
+            // Sin token → al login
+            window.location.href = '/login.html';
+        } else {
+            const datos = decodificarToken(tokenSesion);
+            if (!datos) {
+                cerrarSesion();
+            } else {
+                // Mostrar nombre de usuario (claim "sub")
+                const nombre = datos.sub || datos.nombreUsuario || 'usuario';
+                document.getElementById('nombre-usuario').textContent = nombre;
+
+                // Mostrar roles (el claim "roles" puede ser array o string)
+                let roles = datos.roles || [];
+                if (typeof roles === 'string') {
+                    roles = roles.split(',').map(r => r.trim());
+                }
+                const contenedorRoles = document.getElementById('roles-usuario');
+                roles.forEach(rol => {
+                    const chip = document.createElement('span');
+                    chip.className = 'chip-rol';
+                    chip.textContent = rol.replace('ROLE_', '');
+                    contenedorRoles.appendChild(chip);
+                });
+            }
+        }
+
+        // ============================================================
+        //  FUNCIONALIDAD DEL RESUMEN (búsqueda, pestañas, tema)
+        // ============================================================
+
+        const entradaBusqueda = document.getElementById('entrada-busqueda');
+        const botonesPestana = document.querySelectorAll('[data-bs-toggle="tab"]');
+        const tarjetasConcepto = document.querySelectorAll('.tarjeta-concepto');
+        const contenedorResultados = document.getElementById('resultados-busqueda');
+        const navTabs = document.querySelector('.nav-tabs');
+        const tabContent = document.querySelector('.tab-content');
+
+        // ===== Navegación por pestañas =====
+        botonesPestana.forEach(boton => {
+            boton.addEventListener('click', function(e) {
+                e.preventDefault();
+                const nombrePestana = this.getAttribute('data-tab');
+
+                document.querySelectorAll('.tab-pane').forEach(panel => {
+                    panel.classList.remove('show');
+                });
+
+                const panelPestana = document.getElementById(nombrePestana + '-tab');
+                if (panelPestana) {
+                    panelPestana.classList.add('show');
+                }
+
+                botonesPestana.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                // Al cambiar de pestaña, salir del modo búsqueda
+                entradaBusqueda.value = '';
+                salirModoBusqueda();
+            });
+        });
+
+        // ===== Búsqueda GLOBAL en todo el sitio =====
+        function salirModoBusqueda() {
+            contenedorResultados.style.display = 'none';
+            contenedorResultados.innerHTML = '';
+            navTabs.style.display = '';
+            tabContent.style.display = '';
+        }
+
+        entradaBusqueda.addEventListener('input', function() {
+            const consultaOriginal = this.value.trim();
+            const consulta = consultaOriginal.toLowerCase();
+
+            if (consulta === '') {
+                salirModoBusqueda();
+                return;
+            }
+
+            // Entrar en modo búsqueda: ocultar pestañas y contenido normal
+            navTabs.style.display = 'none';
+            tabContent.style.display = 'none';
+            contenedorResultados.style.display = 'block';
+            contenedorResultados.innerHTML = '';
+
+            let coincidencias = 0;
+            tarjetasConcepto.forEach(tarjeta => {
+                const texto = ((tarjeta.getAttribute('data-searchable') || '') + ' ' + tarjeta.textContent).toLowerCase();
+                if (texto.includes(consulta)) {
+                    const clon = tarjeta.cloneNode(true);
+                    clon.style.display = '';
+                    contenedorResultados.appendChild(clon);
+                    coincidencias++;
+                }
+            });
+
+            if (coincidencias === 0) {
+                contenedorResultados.innerHTML = '<div class="sin-resultados"><div class="icono-sin-resultados">🔍</div><p>No se encontraron conceptos con ese término.</p></div>';
+            } else {
+                const encabezado = document.createElement('p');
+                encabezado.className = 'conteo-resultados';
+                const plural = coincidencias === 1 ? 'resultado' : 'resultados';
+                encabezado.textContent = coincidencias + ' ' + plural + ' para "' + consultaOriginal + '"';
+                contenedorResultados.prepend(encabezado);
+            }
+        });
+
+        // ===== Modo oscuro / claro =====
+        const botonTema = document.getElementById('boton-tema');
+        const iconoTema = document.getElementById('icono-tema');
+        const textoTema = document.getElementById('texto-tema');
+
+        function aplicarTema(tema) {
+            if (tema === 'oscuro') {
+                document.documentElement.setAttribute('data-tema', 'oscuro');
+                iconoTema.textContent = '☀️';
+                textoTema.textContent = 'Modo claro';
+            } else {
+                document.documentElement.removeAttribute('data-tema');
+                iconoTema.textContent = '🌙';
+                textoTema.textContent = 'Modo oscuro';
+            }
+        }
+
+        function leerTemaGuardado() {
+            try {
+                return localStorage.getItem('iam-tema');
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function guardarTema(tema) {
+            try {
+                localStorage.setItem('iam-tema', tema);
+            } catch (e) {
+                /* si localStorage no está disponible, el tema dura solo la sesión */
+            }
+        }
+
+        botonTema.addEventListener('click', function() {
+            const esOscuroAhora = document.documentElement.getAttribute('data-tema') === 'oscuro';
+            const nuevoTema = esOscuroAhora ? 'claro' : 'oscuro';
+            aplicarTema(nuevoTema);
+            guardarTema(nuevoTema);
+        });
+
+        // ===== Inicialización =====
+        (function inicializar() {
+            // Tema: usar el guardado, o la preferencia del sistema operativo
+            const guardado = leerTemaGuardado();
+            if (guardado) {
+                aplicarTema(guardado);
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                aplicarTema('oscuro');
+            }
+            // Mostrar la primera pestaña
+            botonesPestana[0].click();
+        })();
+    </script>
+</body>
+</html>

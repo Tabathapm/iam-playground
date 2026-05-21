@@ -2,6 +2,7 @@ package com.tabathapm.iam.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -38,6 +39,11 @@ public class ConfiguracionSeguridad {
 
     private final FiltroAutenticacionJWT filtroJWT;
     private final UserDetailsService servicioDetalleUsuarios;
+
+    @Bean // Qué es? Es un método que devuelve un componente (bean) que Spring va a gestionar.
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -88,6 +94,7 @@ public class ConfiguracionSeguridad {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/salud").permitAll()
+                .requestMatchers("/", "/login.html", "/dashboard.html", "/favicon.ico").permitAll()
                 .anyRequest().authenticated()
             )
             .authenticationProvider(proveedorAutenticacion())

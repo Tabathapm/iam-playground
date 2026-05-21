@@ -31,7 +31,7 @@ un sistema de gestión de identidades y accesos.
 - [x] **Fase 2** — Autenticación local con JWT + PostgreSQL.
 - [x] **Fase 3** — Autorización por roles (RBAC).
 - [x] **Fase 4** — Integración con OpenLDAP.
-- [ ] **Fase 5** — Login con Google (OAuth 2.0 / OIDC).
+- [x] **Fase 5** — Login con Google (OAuth 2.0 / OIDC).
 - [ ] **Fase 6** — Tests (Unitarios + Integración)
 - [ ] **Fase 7** — Auditoría, Swagger, pulido final.
 

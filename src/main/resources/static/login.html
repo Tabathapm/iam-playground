@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IAM Playground — Iniciar sesión</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primario: #7f77dd;
+            --color-secundario: #1D9E75;
+            --color-acento: #D85A30;
+            --fondo-pagina: #f8f9fa;
+            --fondo-tarjeta: #ffffff;
+            --texto-primario: #1a1a1a;
+            --texto-secundario: #555a66;
+            --color-borde: #e0e0e0;
+            --fondo-input: #ffffff;
+            --sombra: rgba(0,0,0,0.12);
+        }
+
+        [data-tema="oscuro"] {
+            --fondo-pagina: #0f1320;
+            --fondo-tarjeta: #1a2030;
+            --texto-primario: #e9eaf0;
+            --texto-secundario: #a6acbd;
+            --color-borde: #2d3650;
+            --fondo-input: #252c40;
+            --sombra: rgba(0,0,0,0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            background:
+                radial-gradient(circle at 15% 20%, rgba(127, 119, 221, 0.18), transparent 45%),
+                radial-gradient(circle at 85% 80%, rgba(29, 158, 117, 0.16), transparent 45%),
+                var(--fondo-pagina);
+            color: var(--texto-primario);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .tarjeta-login {
+            background: var(--fondo-tarjeta);
+            border: 1px solid var(--color-borde);
+            border-radius: 1.25rem;
+            box-shadow: 0 20px 60px var(--sombra);
+            width: 100%;
+            max-width: 420px;
+            padding: 2.5rem;
+            animation: aparecer 0.5s ease;
+        }
+
+        @keyframes aparecer {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .marca {
+            text-align: center;
+            margin-bottom: 1.75rem;
+        }
+
+        .marca .candado {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .marca h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--color-primario), var(--color-secundario));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .marca p {
+            color: var(--texto-secundario);
+            font-size: 0.9rem;
+            margin-top: 0.35rem;
+        }
+
+        .campo {
+            margin-bottom: 1rem;
+        }
+
+        .campo label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.4rem;
+            color: var(--texto-secundario);
+        }
+
+        .campo input {
+            width: 100%;
+            padding: 0.75rem 0.9rem;
+            border: 1.5px solid var(--color-borde);
+            border-radius: 0.6rem;
+            font-size: 0.95rem;
+            background: var(--fondo-input);
+            color: var(--texto-primario);
+            transition: border-color 0.2s;
+        }
+
+        .campo input:focus {
+            outline: none;
+            border-color: var(--color-primario);
+        }
+
+        .fila-botones {
+            display: flex;
+            gap: 0.6rem;
+            margin-top: 1.25rem;
+        }
+
+        .boton {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.6rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.2s;
+        }
+
+        .boton:active {
+            transform: scale(0.98);
+        }
+
+        .boton-local {
+            background: linear-gradient(135deg, var(--color-primario), var(--color-secundario));
+            color: white;
+        }
+
+        .boton-ldap {
+            background: transparent;
+            color: var(--color-primario);
+            border: 1.5px solid var(--color-primario);
+        }
+
+        .separador {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            color: var(--texto-secundario);
+            font-size: 0.8rem;
+        }
+
+        .separador::before,
+        .separador::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--color-borde);
+        }
+
+        .boton-google {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1.5px solid var(--color-borde);
+            border-radius: 0.6rem;
+            background: var(--fondo-input);
+            color: var(--texto-primario);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            transition: border-color 0.2s, transform 0.15s;
+        }
+
+        .boton-google:hover {
+            border-color: var(--color-primario);
+        }
+
+        .boton-google:active {
+            transform: scale(0.98);
+        }
+
+        .logo-google {
+            width: 18px;
+            height: 18px;
+        }
+
+        .mensaje {
+            margin-top: 1rem;
+            padding: 0.7rem 0.9rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .mensaje.error {
+            display: block;
+            background: rgba(216, 90, 48, 0.12);
+            color: var(--color-acento);
+            border: 1px solid rgba(216, 90, 48, 0.3);
+        }
+
+        .pista-credenciales {
+            margin-top: 1.5rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--color-borde);
+            font-size: 0.78rem;
+            color: var(--texto-secundario);
+            line-height: 1.7;
+        }
+
+        .pista-credenciales strong {
+            color: var(--texto-primario);
+        }
+
+        .pista-credenciales code {
+            background: var(--fondo-input);
+            padding: 0.1rem 0.35rem;
+            border-radius: 0.3rem;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="tarjeta-login">
+        <div class="marca">
+            <span class="candado">🔐</span>
+            <h1>IAM Playground</h1>
+            <p>Iniciá sesión para acceder al panel</p>
+        </div>
+
+        <div class="campo">
+            <label for="usuario">Usuario</label>
+            <input type="text" id="usuario" placeholder="tu usuario" autocomplete="username">
+        </div>
+
+        <div class="campo">
+            <label for="contrasena">Contraseña</label>
+            <input type="password" id="contrasena" placeholder="tu contraseña" autocomplete="current-password">
+        </div>
+
+        <div class="fila-botones">
+            <button class="boton boton-local" onclick="iniciarSesion('local')">Ingresar</button>
+            <button class="boton boton-ldap" onclick="iniciarSesion('ldap')">Ingresar con LDAP</button>
+        </div>
+
+        <div class="separador">o</div>
+
+        <button class="boton-google" onclick="iniciarConGoogle()">
+            <svg class="logo-google" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            Continuar con Google
+        </button>
+
+        <div class="mensaje" id="mensaje"></div>
+
+        <div class="pista-credenciales">
+            <strong>Usuarios de prueba:</strong><br>
+            Local: <code>tabatha</code> / <code>tabatha123</code><br>
+            LDAP: <code>tabatha-ldap</code> / <code>tabatha-ldap-123</code>
+        </div>
+    </div>
+
+    <script>
+        // ----- Configuración de Google OAuth -----
+        const GOOGLE_CLIENT_ID = '505848829107-7vj2ub6nded72re1eq5h5fuaj1ujs6a0.apps.googleusercontent.com';
+        const GOOGLE_REDIRECT_URI = 'http://localhost:8080/api/auth/google/callback';
+
+        // Aplicar tema guardado 
+        try {
+            if (localStorage.getItem('iam-tema') === 'oscuro') {
+                document.documentElement.setAttribute('data-tema', 'oscuro');
+            }
+        } catch (e) { /* sin localStorage, queda tema claro */ }
+
+        const mensaje = document.getElementById('mensaje');
+
+        function mostrarError(texto) {
+            mensaje.textContent = texto;
+            mensaje.className = 'mensaje error';
+        }
+
+        // ----- Login local y LDAP -----
+        async function iniciarSesion(tipo) {
+            const usuario = document.getElementById('usuario').value.trim();
+            const contrasena = document.getElementById('contrasena').value;
+
+            if (!usuario || !contrasena) {
+                mostrarError('Completá usuario y contraseña.');
+                return;
+            }
+
+            const endpoint = tipo === 'ldap' ? '/api/auth/login-ldap' : '/api/auth/login';
+
+            try {
+                const respuesta = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombreUsuario: usuario, contrasena: contrasena })
+                });
+
+                if (!respuesta.ok) {
+                    mostrarError('Credenciales inválidas. Probá de nuevo.');
+                    return;
+                }
+
+                const datos = await respuesta.json();
+                if (!datos.token) {
+                    mostrarError('No se recibió un token válido.');
+                    return;
+                }
+
+                // Guardar el token y redirigir al dashboard
+                guardarTokenYRedirigir(datos.token);
+            } catch (error) {
+                mostrarError('Error de conexión con el servidor.');
+            }
+        }
+
+        // ----- Login con Google  -----
+        function iniciarConGoogle() {
+            const params = new URLSearchParams({
+                client_id: GOOGLE_CLIENT_ID,
+                redirect_uri: GOOGLE_REDIRECT_URI,
+                response_type: 'code',
+                scope: 'openid email profile',
+                access_type: 'offline',
+                prompt: 'select_account'
+            });
+            window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
+        }
+
+        function guardarTokenYRedirigir(token) {
+            try {
+                localStorage.setItem('iam-token', token);
+            } catch (e) { /* si falla, el dashboard lo tomará de la URL */ }
+            window.location.href = '/dashboard.html';
+        }
+
+        // Permitir login con Enter
+        document.getElementById('contrasena').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') iniciarSesion('local');
+        });
+    </script>
+</body>
+</html>
