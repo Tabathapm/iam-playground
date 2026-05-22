@@ -62,7 +62,12 @@ public class ServicioAutenticacionLDAP {
             String baseDeBusqueda = "ou=" + baseOu;
             String filtro = "(uid=" + nombreUsuario + ")";
             
-            ldapTemplate.authenticate(baseDeBusqueda, filtro, contrasena);
+            boolean autenticado = ldapTemplate.authenticate(baseDeBusqueda, filtro, contrasena);
+
+            if (!autenticado) {
+                log.warn("Autenticación LDAP fallida (credenciales inválidas): {}", nombreUsuario);
+                throw new RuntimeException("Credenciales LDAP inválidas");
+            }
 
             log.info("Autenticación LDAP exitosa para: {}", nombreUsuario);
 

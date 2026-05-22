@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.AuthenticationException;
 
 import com.tabathapm.iam.dto.RespuestaToken;
 import com.tabathapm.iam.dto.SolicitudLogin;
@@ -52,7 +53,13 @@ public class ControladorAutenticacion {
     @PostMapping("/login")
     public ResponseEntity<RespuestaToken> login(
             @Valid @RequestBody SolicitudLogin solicitud) {
-        return ResponseEntity.ok(servicioAutenticacion.autenticar(solicitud));
+        try {
+            return ResponseEntity.ok(servicioAutenticacion.autenticar(solicitud));
+        } catch (AuthenticationException e) {
+            log.warn("Login fallido para usuario: {}", solicitud.nombreUsuario());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new RespuestaToken(null, "Bearer", 0));
+        }
     }
 
     /**
